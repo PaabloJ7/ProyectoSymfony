@@ -1,0 +1,581 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Spoty{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="logo">
+        <a href="">
+            <img src="/uploads/images/Spotify Logo.png" alt="Logo">
+        </a>
+    </div>
+
+    <div class="navigation">
+        <ul>
+            <li>
+                <a href="">
+                    <span class="fa fa-home"></span>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="/buscador">
+                    <span class="fa fa-search"></span>
+                    <span>Search</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="navigation">
+        <ul>
+            <li>
+                <a href="/playlist/new">
+                    <span class="fa fa-home"></span>
+                    <span>Create Playlist</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="main-container">
+    <div class="topbar">
+        <div class="navbar">
+            <ul>
+                <li>
+                    <a href="/logout">Log out</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Canciones Section -->
+    <div class="spotify-playlists">
+        <h2>Canciones</h2>
+        <div class="list">
+            {% for song in Cancion %}
+
+            <div class="item" onmouseover="showPlayButton(this)" onmouseout="hidePlayButton(this)">
+                <img src="{{ asset('uploads/images/' ~ song.imagen) }}" alt="{{ song.titulo }} Cover" class="song-image">
+                <h4>{{ song.titulo }}</h4>
+                <p>{{ song.artista }}</p>
+                <!-- Botón de reproducción en la esquina inferior derecha -->
+                <div class="play-btn-container">
+                    <button class="play-btn" onclick="togglePlay('{{ asset('uploads/canciones/' ~ song.archivo) }}', 'iconPlay_{{ song.id }}')">
+                        <span class="fa fa-play"></span>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+<!-- Listas de Reproducción Section -->
+<div class="spotify-playlists">
+    <h2>Listas de Reproduccion</h2>
+    <div class="list">
+        {% if playlists is defined %}
+            {% for playlist in playlists %}
+        
+             <div class="item" onmouseover="showPlayButton(this)" onmouseout="hidePlayButton(this)">
+                <img src="{{ asset('uploads/images/' ~ playlist.imagen) }}" alt="{{ playlist.nombre }} Cover" class="song-image">
+                    <h4>{{ playlist.nombre }}</h4>
+                    <p>Nose</p>
+                     <div class="play-btn-container">
+                    <button class="play-btn" >
+                        <span class="fa fa-play"></span>
+                    </button>
+                </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No hay listas de reproducción disponibles.</p>
+        {% endif %}
+    </div>
+</div>
+
+    <!-- Contenedor de la barra de reproducción y el reproductor de audio -->
+    <div class="audio-player-container">
+        <div class="audio-player">
+            <audio id="archivoPlayer"></audio>
+            <input type="range" id="volumeControl" min="0" max="100" value="100" oninput="changeVolume()">
+        </div>
+
+        <div class="progress-container">
+            <progress id="progressBar" max="100" oninput="updateProgressBar()"></progress>
+        </div>
+
+        <div class="play-pause-container">
+                   <button class="skip-btn" onclick="skipToPrevious()">
+                <span class="fa fa-backward"></span> Anterior
+            </button>
+
+            <button class="play-pause-btn" onclick="togglePlayPause()">
+                <span id="playPauseIcon" class="fa fa-play"></span>
+            </button>
+                        <button class="skip-btn" onclick="skipToNext()">
+                 <span class="fa fa-forward"></span> Siguiente
+            </button>
+        </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/ef9a692198.js" crossorigin="anonymous"></script>
+
+
+    <audio id="archivoPlayer" controls style="display: none;"></audio>
+
+
+    <script>
+        // Obtener el reproductor de archivo y el icono
+        let player = document.getElementById("archivoPlayer");
+        let iconElement;
+        let currentArchivoSource = "";
+        let currentSongIndex = 0;
+        let songs = [
+            {% for song in Cancion %}
+                {
+                    titulo: "{{ song.titulo }}",
+                    artista: "{{ song.artista }}",
+                    archivo: "{{ asset('uploads/canciones/' ~ song.archivo) }}"
+                },
+            {% endfor %}
+        ];
+
+        
+        function togglePlay(archivoSource, iconId) {
+            // Si no se proporciona una nueva fuente, usar la fuente actual
+            if (!archivoSource) {
+                archivoSource = currentArchivoSource;
+            }
+
+            // Si la nueva fuente es igual a la fuente actual, cambiar la reproducción
+            if (currentArchivoSource === archivoSource) {
+                if (player.paused) {
+                    player.play();
+                } else {
+                    player.pause();
+                }
+            } else { // Cambiar la fuente del reproductor de archivo
+                player.src = archivoSource;
+
+                
+                player.pause();
+
+                
+                iconElement = document.getElementById(iconId);
+
+               
+                resetIcons();
+
+                
+                toggleIcon('{{ asset('uploads/images/pause.png') }}');
+                player.play();
+
+              
+                updateCurrentSongInfo();
+            }
+
+            // Almacenar la nueva fuente como la fuente actual
+            currentArchivoSource = archivoSource;
+        }
+
+        // Función para cambiar la imagen de reproducir/pausar
+        function toggleIcon(newImagePath) {
+            // Verificar si el iconElement está definido
+            if (iconElement) {
+                iconElement.src = newImagePath;
+            }
+        }
+
+        // Función para restablecer la imagen de los botones anteriores
+        function resetIcons() {
+            // Obtener todos los elementos de imagen con ID que comienza con "iconPlay_"
+            let allIcons = document.querySelectorAll('[id^="iconPlay_"]');
+
+            // Iterar sobre todos los elementos y restablecer la imagen a "play.png"
+            allIcons.forEach(function (icon) {
+                icon.src = '{{ asset('uploads/images/play.png') }}';
+            });
+        }
+
+        // Función para saltar a la siguiente canción
+        function skipToNext() {
+            currentSongIndex++;
+            if (currentSongIndex >= songs.length) {
+                currentSongIndex = 0;
+            }
+            let nextSong = songs[currentSongIndex];
+            togglePlay(nextSong.archivo, 'iconPlay_' + nextSong.id);
+        }
+
+        // Función para actualizar la información de la canción actual en la barra de reproducción
+        function updateCurrentSongInfo() {
+            let currentSong = songs[currentSongIndex];
+            document.getElementById('currentSongTitle').textContent = currentSong.titulo;
+            document.getElementById('currentSongArtist').textContent = currentSong.artista;
+        }
+
+    // Actualizar la barra de progreso con el tiempo de reproducción
+    player.addEventListener('timeupdate', function() {
+        let progress = (player.currentTime / player.duration) * 100;
+        document.getElementById('progressBar').value = progress;
+    });
+
+    // Controlar la barra de progreso manualmente
+function updateProgressBar() {
+    let progress = document.getElementById('progressBar').value;
+    let duration = player.duration;
+    player.currentTime = (progress / 100) * duration;
+}
+
+    function changeVolume() {
+        let volume = document.getElementById('volumeControl').value;
+        player.volume = volume / 100;
+    }
+
+    function showPlayButton(container) {
+        var playButton = container.querySelector('.play-btn');
+        playButton.style.display = 'block';
+    }
+
+    function hidePlayButton(container) {
+        var playButton = container.querySelector('.play-btn');
+        playButton.style.display = 'none';
+    }
+
+        function togglePlayPause() {
+        if (player.paused) {
+            player.play();
+            toggleIcon('{{ asset('uploads/images/pause.png') }}');
+        } else {
+            player.pause();
+            toggleIcon('{{ asset('uploads/images/play.png') }}');
+        }
+    }
+
+    function skipToPrevious() {
+    currentSongIndex--;
+    if (currentSongIndex < 0) {
+        currentSongIndex = songs.length - 1;
+    }
+    let previousSong = songs[currentSongIndex];
+    togglePlay(previousSong.archivo, 'iconPlay_' + previousSong.id);
+}
+
+function skipToNext() {
+    currentSongIndex++;
+    if (currentSongIndex >= songs.length) {
+        currentSongIndex = 0;
+    }
+    let nextSong = songs[currentSongIndex];
+    togglePlay(nextSong.archivo, 'iconPlay_' + nextSong.id);
+}
+
+    </script>
+
+   <Style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300;1,400;1,500&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: #121212;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 300px;
+    background-color: #000000;
+    padding: 24px;
+}
+
+.sidebar .logo img {
+    width: 130px;
+}
+
+.sidebar .navigation ul {
+    list-style: none;
+    margin-top: 20px;
+}
+
+.sidebar .navigation ul li {
+    padding: 10px 0px;
+}
+
+.sidebar .navigation ul li a {
+    color: #b3b3b3;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 18px;
+}
+
+.sidebar .navigation ul li .fa {
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+.sidebar .navigation ul li a:hover {
+    color: #ffffff;
+}
+
+.main-container {
+    margin-left: 350px;
+    margin-bottom: 100px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    background-color: #000;
+    padding: 14px 30px;
+}
+
+
+.topbar .navbar {
+    display: flex;
+    align-items: center;
+}
+
+.topbar .navbar ul {
+    list-style: none;
+}
+
+.topbar .navbar ul li {
+    display: inline-block;
+    margin: 0px 8px;
+    width: 70px;
+}
+
+.topbar .navbar ul li a {
+    color: #b3b3b3;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.topbar .navbar ul li a:hover {
+    color: #ffffff;
+    font-size: 15px;
+}
+
+.topbar .navbar button {
+    background-color: #ffffff;
+    color: #000000;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 14px 30px;
+    border: 0px;
+    border-radius: 40px;
+    cursor: pointer;
+    margin-left: 20px;
+}
+
+.topbar .navbar button:hover {
+    background-color: #f2f2f2;
+}
+
+.spotify-playlists {
+    padding: 20px 40px;
+}
+
+.spotify-playlists h2 {
+    color: #ffffff;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.spotify-playlists .list {
+    display: flex;
+    flex-direction: row;  /* Cambia la dirección de flex a 'row' */
+    gap: 20px;
+    overflow: auto;  /* Puedes usar 'auto' para agregar una barra de desplazamiento horizontal si hay demasiados elementos */
+}
+
+.spotify-playlists .list .item {
+    min-width: 140px;
+    width: 160px;
+    padding: 15px;
+    background-color: #181818;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all ease 0.4s;
+    flex-shrink: 0;  /* Evitar que los elementos se contraigan para adaptarse al contenedor */
+}
+
+.spotify-playlists .list .item:hover {
+    background-color: #252525;
+}
+
+
+
+.spotify-playlists .list .item img {
+    width: 100%;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.spotify-playlists .list .item .play {
+    position: relative;
+}
+
+.spotify-playlists .list .item .play .fa {
+    position: absolute;
+    right: 10px;
+    top: -60px;
+    padding: 18px;
+    background-color: #1db954;
+    border-radius: 100%;
+    opacity: 0;
+    transition: all ease 0.4s;
+}
+
+.spotify-playlists .list .item:hover .play .fa {
+    opacity: 1;
+    transform: translateY(-20px);
+}
+
+.spotify-playlists .list .item h4 {
+    color: #ffffff;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spotify-playlists .list .item p {
+    color: #989898;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
+.spotify-playlists hr {
+    margin: 70px 0px 0px;
+    border-color: #636363;
+}
+
+
+/* Agregar estilos al botón de reproducción */
+    .play-btn-container {
+        position: relative;
+    }
+
+    .play-btn {
+        background-color: #1db954;
+        color: #ffffff;
+        border: none;
+        padding: 8px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: none; /* Inicialmente oculto */
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        transition: background-color 0.3s;
+    }
+
+    .play-btn-container:hover .play-btn {
+        background-color: #147536;
+    }
+    .spotify-playlists .list {
+  display: flex;
+  gap: 20px;
+  overflow: hidden;
+  flex-wrap: wrap; /* Esta línea envolverá los elementos */
+}
+
+ .audio-player-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .audio-player {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    #volumeControl {
+        width: 80%;
+        margin-top: 10px;
+    }
+
+    .skip-btn {
+        background-color: #1db954;
+        color: #ffffff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 0 10px;
+        transition: background-color 0.3s;
+    }
+
+    .skip-btn:hover {
+        background-color: #147536;
+    }
+
+    .progress-container {
+        width: 80%;
+        margin-top: 10px;
+    }
+
+    #progressBar {
+        width: 100%;
+        height: 8px;
+        cursor: pointer;
+    }
+
+    #progressBar::-webkit-slider-thumb {
+        background-color: #1db954;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    #progressBar::-moz-range-thumb {
+        background-color: #1db954;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .play-pause-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .play-pause-btn {
+        background-color: #1db954;
+        color: #ffffff;
+        border: none;
+        padding: 15px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .play-pause-btn:hover {
+        background-color: #147536;
+    }
+</style>
+
+
+{% endblock %}

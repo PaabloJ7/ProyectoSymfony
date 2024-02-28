@@ -1,0 +1,17 @@
+{# templates/playlist/new.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Crear nueva lista de reproducción{% endblock %}
+
+{% block body %}
+    <h1>Crear nueva lista de reproducción</h1>
+
+{{ form_start(form) }}
+    {{ form_row(form.Nombre) }}
+    {{ form_row(form.ImagenFile) }}
+    {{ form_row(form.canciones) }} {# Add this line for songs selection #}
+    {{ form_row(form._token) }}
+    <button type="submit">Crear Playlist</button>
+{{ form_end(form) }}
+{% endblock %}
