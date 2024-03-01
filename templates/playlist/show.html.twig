@@ -1,0 +1,9 @@
+<h1>{{ playlist.id }} - Playlist</h1>
+
+
+<h2>Canciones:</h2>
+<ul>
+{% for cancion in canciones %}
+    {{ cancion.nombre }}
+{% endfor %}
+</ul>

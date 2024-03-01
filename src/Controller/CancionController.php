@@ -104,5 +104,7 @@ public function addToPlaylist(EntityManagerInterface $entityManager, $playlistId
 
     return $this->redirectToRoute('app_canciones_index');
 }
+
+
     
 }

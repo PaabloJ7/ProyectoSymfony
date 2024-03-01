@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 28-02-2024 a las 20:36:13
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.0.30
+-- Tiempo de generación: 01-03-2024 a las 14:21:05
+-- Versión del servidor: 10.4.28-MariaDB
+-- Versión de PHP: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -59,6 +59,17 @@ CREATE TABLE `cancion_en_playlist` (
   `id_playlist` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `cancion_en_playlist`
+--
+
+INSERT INTO `cancion_en_playlist` (`id_relacion`, `id_cancion`, `id_playlist`) VALUES
+(1, 3, 19),
+(2, 4, 19),
+(3, 5, 19),
+(4, 6, 20),
+(5, 7, 20);
+
 -- --------------------------------------------------------
 
 --
@@ -70,6 +81,13 @@ CREATE TABLE `doctrine_migration_versions` (
   `executed_at` datetime DEFAULT NULL,
   `execution_time` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `doctrine_migration_versions`
+--
+
+INSERT INTO `doctrine_migration_versions` (`version`, `executed_at`, `execution_time`) VALUES
+('DoctrineMigrations\\Version20240228151858', '2024-03-01 13:51:07', 40);
 
 -- --------------------------------------------------------
 
@@ -92,7 +110,8 @@ INSERT INTO `playlist` (`id`, `nombre`, `id_usuario`, `imagen`) VALUES
 (14, 'efgegeg', '8', 'tainy-65df44ae2865e.png'),
 (15, 'sdgsdgdssssssss', '8', 'unnamed-65df44b4d5af6.jpg'),
 (16, 'Demonio', '8', 'nones-65df4e3a96c08.jpg'),
-(17, 'Demonio', '10', 'unnamed-65df4e669d825.jpg');
+(19, 'thrtjnrjtj', '8', 'maxresdefault-65e1bf83b711e.jpg'),
+(20, 'Focus', '8', 'playlist-65e1c2df55abd.jpg');
 
 -- --------------------------------------------------------
 
@@ -105,7 +124,7 @@ CREATE TABLE `usuario` (
   `email` varchar(180) NOT NULL,
   `password` varchar(255) NOT NULL,
   `roles` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '(DC2Type:json)' CHECK (json_valid(`roles`)),
-  `username` varchar(255) NOT NULL
+  `username` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -113,8 +132,8 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`id`, `email`, `password`, `roles`, `username`) VALUES
-(1, 'pablodelasierra7@gmail.com', '$2y$13$B0qyhAzchO575PyDzpCcSOFIoxTngEbZ0LNGYPUCPgg27t4YWRQgG', '[]', ''),
-(8, 'admin@admin.com', '$2y$13$1cTf2V5z4VxBaMyHHrOERukuaq3wTq7CO0WKHXlz./V5fVijnYG7S', '[]', ''),
+(1, 'pablodelasierra7@gmail.com', '$2y$13$B0qyhAzchO575PyDzpCcSOFIoxTngEbZ0LNGYPUCPgg27t4YWRQgG', '[]', NULL),
+(8, 'admin@admin.com', '$2y$13$1cTf2V5z4VxBaMyHHrOERukuaq3wTq7CO0WKHXlz./V5fVijnYG7S', '[]', NULL),
 (10, 'prueba1@prueba.com', '$2y$13$7VvxndscraRapR2FWb.bve04r5fPLl5Gyc8UCDv3nJ.I8SR/8t7TK', '[]', 'prueba1'),
 (11, 'azul@azul.com', '$2y$13$FIh/wjlPGV2eb/89t/DDkumkOXEU9eghyyvvqowqKodocx32UGhFi', '[]', 'azul');
 
@@ -153,7 +172,8 @@ ALTER TABLE `playlist`
 --
 ALTER TABLE `usuario`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `UNIQ_2265B05DE7927C74` (`email`);
+  ADD UNIQUE KEY `UNIQ_2265B05DE7927C74` (`email`),
+  ADD UNIQUE KEY `UNIQ_2265B05DF85E0677` (`username`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -169,13 +189,13 @@ ALTER TABLE `cancion`
 -- AUTO_INCREMENT de la tabla `cancion_en_playlist`
 --
 ALTER TABLE `cancion_en_playlist`
-  MODIFY `id_relacion` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_relacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `playlist`
 --
 ALTER TABLE `playlist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `usuario`
@@ -192,7 +212,7 @@ ALTER TABLE `usuario`
 --
 ALTER TABLE `cancion_en_playlist`
   ADD CONSTRAINT `FK_9D1A093C3AFFA6D0` FOREIGN KEY (`id_cancion`) REFERENCES `cancion` (`id`),
-  ADD CONSTRAINT `FK_9D1A093C8759FDB8` FOREIGN KEY (`id_playlist`) REFERENCES `playlist` (`id`);
+  ADD CONSTRAINT `FK_9D1A093C8759FDB8` FOREIGN KEY (`id_playlist`) REFERENCES `playlist` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

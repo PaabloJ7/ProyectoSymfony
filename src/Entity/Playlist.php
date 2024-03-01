@@ -33,20 +33,20 @@ class Playlist
     #[Assert\File(maxSize: "20M", mimeTypes: "image/*")]
     private ?File $ImagenFile = null;
 
-     /**
-     * @ORM\ManyToMany(targetEntity=Cancion::class)
-     * @ORM\JoinTable(
-     *     name="canciones_en_playlist",
-     *     joinColumns={@ORM\JoinColumn(name="playlist_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="cancion_id", referencedColumnName="id")}
-     * )
-     */
-    private Collection $canciones;
+/**
+ * @ORM\ManyToMany(targetEntity=Cancion::class)
+ * @ORM\JoinTable(
+ *     name="canciones_en_playlist",
+ *     joinColumns={@ORM\JoinColumn(name="playlist_id", referencedColumnName="id")},
+ *     inverseJoinColumns={@ORM\JoinColumn(name="cancion_id", referencedColumnName="id")}
+ * )
+ */
+private Collection $canciones;
 
-    public function __construct()
-    {
-        $this->canciones = new ArrayCollection();
-    }
+public function __construct()
+{
+
+}
 
     public function getId(): ?int
     {
@@ -101,11 +101,18 @@ class Playlist
         return $this;
     }
 
-    /**
+     /**
      * @return Collection|Cancion[]
      */
     public function getCanciones(): Collection
     {
+        if (!isset($this->canciones)) {
+            $this->canciones = new ArrayCollection();
+        } else {
+            // Inicializa la colección de canciones si aún no se ha hecho
+
+        }
+
         return $this->canciones;
     }
 
